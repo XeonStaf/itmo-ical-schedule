@@ -6,7 +6,7 @@ const ics = require('ics');
 
 
 const username = process.env.USERNAME;
-const password = process.env.password;
+const password = process.env.PASSWORD;
 
 //const OPENID_CONFIG_ENDPOINT = 'https://login.itmo.ru/auth/realms/itmo/.well-known/openid-configuration';
 const TOKEN_ENDPOINT = 'https://login.itmo.ru/auth/realms/itmo/protocol/openid-connect/token';
@@ -61,10 +61,10 @@ exports.handler = async (event, context) => {
 
     const events = [];
 
-    for (let day in schedule.data) {
-      if (!day.lessons) continue;
+    for (let day of schedule.data) {
+      if (!day.lessons.length) continue;
 
-      for (let lesson in day.lessons) {
+      for (let lesson of day.lessons) {
         const pairType = pairTypes[lesson.type] || lesson.type;
 
         let title = `[${pairType}] ${lesson.subject}`;
@@ -73,7 +73,6 @@ exports.handler = async (event, context) => {
           title = `🌎${title}`;
         }
 
-        console.log([ ...(day.date.split('-').map(x => parseInt(x, 10))), ...(lesson.time_start.split(':').map(x => parseInt(x, 10))) ]);
         const event = {
           productId: 'maksimkurb-itmo-ics',
           uid: `pair-${lesson.pair_id}@itmo.cubly.ru`,
@@ -108,7 +107,10 @@ ${lesson.zoom_info ? `Zoom Info: ${lesson.zoom_info}` : ''}`,
 
     const ical = await generateSchedule(events);
 
-    return { statusCode: 200, body: ical };
+    return { statusCode: 200, body: ical, headers: {
+      'Content-Type': 'text/calendar; charset=utf-8',
+      'Content-Disposition': 'inline'
+    } };
   } catch (error) {
     console.log(error);
     return {
