@@ -1,0 +1,20 @@
+# Production context:
+# All deploys from the main repository branch
+# will inherit these settings.
+[context.production.environment]
+  USERNAME = "ISU login"
+  PASSWORD = "ISU password"
+
+# Deploy Preview context:
+# All deploys generated from a pull/merge request
+# will inherit these settings.
+[context.deploy-preview.environment]
+  USERNAME = "ISU login"
+  PASSWORD = "ISU password"
+
+# Branch deploy context:
+# All deploys that are not from a pull/merge request
+# or from the production branch will inherit these settings.
+[context.branch-deploy.environment]
+  USERNAME = "ISU login"
+  PASSWORD = "ISU password"
