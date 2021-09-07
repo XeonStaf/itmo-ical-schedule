@@ -18,3 +18,7 @@
 [context.branch-deploy.environment]
   USERNAME = "ISU login"
   PASSWORD = "ISU password"
+
+[functions]
+  directory = "functions"
+  node_bundler = "esbuild"

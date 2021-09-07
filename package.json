@@ -2,8 +2,13 @@
   "name": "itmo-ical-schedule",
   "version": "1.0.0",
   "description": "Exports your personal schedule to ical format for Google Calendar",
-  "main": "index.js",
+  "main": "functions/schedule.js",
   "author": "Maxim Kurbatov",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "date-fns": "^2.23.0",
+    "ics": "^2.31.0",
+    "node-fetch": "^3.0.0"
+  }
 }
