@@ -2,6 +2,8 @@ const fetch = require('node-fetch').default;
 const addMonths = require('date-fns/addMonths');
 const subMonths = require('date-fns/subMonths');
 const format = require('date-fns/format');
+const parse = require('date-fns/parse');
+const { zonedTimeToUtc } = require('date-fns-tz')
 const ics = require('ics');
 
 
@@ -13,6 +15,7 @@ const TOKEN_ENDPOINT = 'https://login.itmo.ru/auth/realms/itmo/protocol/openid-c
 const SCHEDULE_ENDPOINT = 'https://my.itmo.ru/api/schedule/schedule/personal';
 
 const DATE_FORMAT_YMD = 'yyyy-MM-dd';
+const DATE_REGEX_UTC = /(\d+)-(\d+)-(\d+)T(\d+):(\d+)/;
 
 const pairTypes = {
   'Лекции': 'Лк',
@@ -33,6 +36,11 @@ const generateSchedule = (events) => {
   });
 }
 
+function convertDate(date) {
+  const groups = date.toISOString().match(DATE_REGEX_UTC);
+
+  return [groups[1], groups[2], groups[3], groups[4], groups[5]].map(x => parseInt(x, 10));
+}
 
 exports.handler = async (event, context) => {
   try {
@@ -73,11 +81,18 @@ exports.handler = async (event, context) => {
           title = `🌎${title}`;
         }
 
+        const startDateString = `${day.date} ${lesson.time_start}:00.000`;
+        const startDate = zonedTimeToUtc(startDateString, 'Europe/Moscow');
+        const endDateString = `${day.date} ${lesson.time_end}:00.000`;
+        const endDate = zonedTimeToUtc(endDateString, 'Europe/Moscow');
+
         const event = {
           productId: 'maksimkurb-itmo-ics',
           uid: `pair-${lesson.pair_id}@itmo.cubly.ru`,
-          start: [ ...(day.date.split('-').map(x => parseInt(x, 10))), ...(lesson.time_start.split(':').map(x => parseInt(x, 10))) ],
-          end: [ ...(day.date.split('-').map(x => parseInt(x, 10))), ...(lesson.time_end.split(':').map(x => parseInt(x, 10))) ],
+          start: convertDate(startDate),
+          startInputType: 'utc',
+          end: convertDate(endDate),
+          endInputType: 'utc',
           title,
           description:
           `Преподаватель: ${lesson.teacher_name}
