@@ -4,6 +4,7 @@
 [context.production.environment]
   USERNAME = "ISU login"
   PASSWORD = "ISU password"
+  EMAIL = "your@email.com"
 
 # Deploy Preview context:
 # All deploys generated from a pull/merge request
@@ -11,6 +12,7 @@
 [context.deploy-preview.environment]
   USERNAME = "ISU login"
   PASSWORD = "ISU password"
+  EMAIL = "your@email.com"
 
 # Branch deploy context:
 # All deploys that are not from a pull/merge request
@@ -18,6 +20,7 @@
 [context.branch-deploy.environment]
   USERNAME = "ISU login"
   PASSWORD = "ISU password"
+  EMAIL = "your@email.com"
 
 [functions]
   directory = "functions"

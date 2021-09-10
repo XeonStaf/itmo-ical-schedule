@@ -9,6 +9,7 @@ const ics = require('ics');
 
 const username = process.env.USERNAME;
 const password = process.env.PASSWORD;
+const email = process.env.EMAIL;
 
 //const OPENID_CONFIG_ENDPOINT = 'https://login.itmo.ru/auth/realms/itmo/.well-known/openid-configuration';
 const TOKEN_ENDPOINT = 'https://login.itmo.ru/auth/realms/itmo/protocol/openid-connect/token';
@@ -47,7 +48,8 @@ exports.handler = async (event, context) => {
     const tokenReq = await fetch(TOKEN_ENDPOINT, {
       method: 'POST',
       body: new URLSearchParams({
-          'client_id': 'student-personal-cabinet',
+          'client_id': 'is-app',
+          'client_secret': '1b55dc77-51aa-4572-a8cd-869f16d1f525',
           'grant_type': 'password',
 
           'username': username,
@@ -55,6 +57,8 @@ exports.handler = async (event, context) => {
       })
     });
     const token = await tokenReq.json();
+
+    console.log(token);
 
     const now = new Date();
     const fromDate = format(subMonths(now, 3), DATE_FORMAT_YMD);
@@ -68,6 +72,11 @@ exports.handler = async (event, context) => {
     const schedule = await scheduleReq.json();
 
     const events = [];
+
+
+    if (schedule.code !== 0) {
+      throw new Error("Failed to fetch schedule: "+schedule.message);
+    }
 
     for (let day of schedule.data) {
       if (!day.lessons.length) continue;
@@ -116,6 +125,12 @@ ${lesson.zoom_info ? `Zoom Info: ${lesson.zoom_info}` : ''}`,
           ]
         };
 
+        if (email != null && email != '') {
+          event.attendees = [
+            { name: 'Student', email: email, rsvp: false, partstat: 'ACCEPTED', role: 'REQ-PARTICIPANT' }
+          ];
+        }
+
         events.push(event);
       }
     }
@@ -130,7 +145,10 @@ ${lesson.zoom_info ? `Zoom Info: ${lesson.zoom_info}` : ''}`,
     console.log(error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed fetching data' }),
+      body: JSON.stringify({ error: error.message }),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      }
     };
   }
 };
