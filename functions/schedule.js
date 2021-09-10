@@ -58,7 +58,9 @@ exports.handler = async (event, context) => {
     });
     const token = await tokenReq.json();
 
-    console.log(token);
+    if (tokenReq.status != 200) {
+      throw new Error('Failed to auth: '+JSON.stringify(token));
+    }
 
     const now = new Date();
     const fromDate = format(subMonths(now, 3), DATE_FORMAT_YMD);
@@ -73,9 +75,8 @@ exports.handler = async (event, context) => {
 
     const events = [];
 
-
     if (schedule.code !== 0) {
-      throw new Error("Failed to fetch schedule: "+schedule.message);
+      throw new Error(JSON.stringify(schedule.message));
     }
 
     for (let day of schedule.data) {
@@ -142,13 +143,25 @@ ${lesson.zoom_info ? `Zoom Info: ${lesson.zoom_info}` : ''}`,
       'Content-Disposition': 'inline'
     } };
   } catch (error) {
-    console.log(error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8'
-      }
+    const event = {
+      productId: 'maksimkurb-itmo-ics',
+      uid: `failure@itmo.cubly.ru`,
+      start: [2021, 09, 01],
+      startInputType: 'utc',
+      end: [3021, 09, 01],
+      endInputType: 'utc',
+      title: 'ITMO SCHED BROKEN (see description)',
+      description:
+      `Failed to fetch your schedule: ${error.message}`,
+      status: 'CONFIRMED',
+      busyStatus: 'BUSY'
     };
+
+    const ical = await generateSchedule([event]);
+
+    return { statusCode: 200, body: ical, headers: {
+      'Content-Type': 'text/calendar; charset=utf-8',
+      'Content-Disposition': 'inline'
+    } };
   }
 };
