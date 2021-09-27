@@ -19,6 +19,7 @@ const DATE_FORMAT_YMD = 'yyyy-MM-dd';
 const DATE_REGEX_UTC = /(\d+)-(\d+)-(\d+)T(\d+):(\d+)/;
 
 const pairTypes = {
+  'Экзамен': 'ЭКЗ',
   'Лекции': 'Лк',
   'Практические занятия': 'Пр',
   'Лабораторные занятия': 'Лаб'
@@ -105,25 +106,17 @@ exports.handler = async (event, context) => {
           endInputType: 'utc',
           title,
           description:
-          `Преподаватель: ${lesson.teacher_name}
+          `Преподаватель: ${lesson.teacher_name || '[пусто]'}
 ${lesson.note ? `Примечание: ${lesson.note}` : ''}
 Формат: ${lesson.format}
 ${lesson.zoom_url ? `Zoom URL: ${lesson.zoom_url}` : ''}
-${lesson.zoom_password ? `Zoom PWD: ${lesson.zoom_password}` : ''}
-${lesson.zoom_info ? `Zoom Info: ${lesson.zoom_info}` : ''}`,
-          location: `${lesson.building}, ауд. ${lesson.room}`,
+${lesson.zoom_password ? `Zoom PWD: ${lesson.zoom_password || '[пусто]'}` : ''}
+${lesson.zoom_info ? `Zoom Info: ${lesson.zoom_info || '[пусто]'}` : ''}`,
+          location: (lesson.building || lesson.room) ? `${lesson.building || '[адрес не указан]'}, ауд. ${lesson.room || '[не указана]'}` : 'Аудитория не указана',
           url: lesson.zoom_url,
           status: 'CONFIRMED',
           busyStatus: 'BUSY',
-          organizer: { name: lesson.teacher_name, email: 'noreply@cubly.ru' },
-          alarms: [
-            {
-              action: 'audio',
-              description: 'Reminder',
-              trigger: {hours:0,minutes:10,before:true},
-              repeat: 1
-            }
-          ]
+          organizer: { name: lesson.teacher_name || 'Преподаватель не указан', email: 'noreply@cubly.ru' }
         };
 
         if (email != null && email != '') {
