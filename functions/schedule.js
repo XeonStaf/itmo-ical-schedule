@@ -121,14 +121,14 @@ async function fetchSchedule(token, fromDate, toDate) {
 
 exports.handler = async (event, context) => {
   try {
-    let token = await getAuthToken();
-
     const now = new Date();
     const fromDate = format(subMonths(now, 3), DATE_FORMAT_YMD);
     const toDate = format(addMonths(now, 3), DATE_FORMAT_YMD);
 
     let schedule;
     try {
+      let token = await getAuthToken();
+  
       schedule = await fetchSchedule(token, fromDate, toDate);
     } catch (e) {
       console.error(e);
