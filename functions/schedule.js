@@ -1,4 +1,6 @@
-const fetch = require('node-fetch').default;
+const buildDbClient = require('../lib/dbClient');
+
+const fetch = require('node-fetch');
 
 const addMonths = require('date-fns/addMonths');
 const subMonths = require('date-fns/subMonths');
@@ -8,7 +10,6 @@ const isFuture = require('date-fns/isFuture');
 const { zonedTimeToUtc } = require('date-fns-tz');
 
 const ics = require('ics');
-const buildDbClient = require('../src/dbClient');
 
 if (!process.env.NETLIFY) {
   require('dotenv').config()
@@ -18,21 +19,30 @@ const username = process.env.LOGIN;
 const password = process.env.PASSWORD;
 const email = process.env.EMAIL;
 
+const itmoAppCreds = process.env.ITMO_APP_CREDS;
+const itmoAppVersion = process.env.ITMO_APP_VERSION || '3.5.0';
+
 if (!username || !password) {
   throw new Error('LOGIN and PASSWORD are required environment variables');
+}
+
+
+if (!itmoAppCreds) {
+  throw new Error('ITMO_APP_CREDS should contain Authorization header value (you must sniff ITMO.STUDENT app to obtain it)');
 }
 
 const dbClient = buildDbClient();
 
 //const OPENID_CONFIG_ENDPOINT = 'https://login.itmo.ru/auth/realms/itmo/.well-known/openid-configuration';
-const TOKEN_ENDPOINT = 'https://login.itmo.ru/auth/realms/itmo/protocol/openid-connect/token';
+const TOKEN_ENDPOINT = 'https://id.itmo.ru/auth/realms/itmo/protocol/openid-connect/token';
 const SCHEDULE_ENDPOINT = 'https://my.itmo.ru/api/schedule/schedule/personal';
 
 const DATE_FORMAT_YMD = 'yyyy-MM-dd';
 const DATE_REGEX_UTC = /(\d+)-(\d+)-(\d+)T(\d+):(\d+)/;
 
 const pairTypes = {
-  'Экзамен': 'ЭКЗ',
+  'Зачет': 'ЗАЧ🔥',
+  'Экзамен': 'ЭКЗ🔥',
   'Лекции': 'Лк',
   'Практические занятия': 'Пр',
   'Лабораторные занятия': 'Лаб'
@@ -66,8 +76,7 @@ async function getAuthToken(forceNew) {
   }
 
   const body = {
-    'client_id': 'is-app',
-    'client_secret': '1b55dc77-51aa-4572-a8cd-869f16d1f525'
+    scope: 'profile offline_access'
   };
   if (!forceNew && dbToken) {
     const updatedAt = Math.round(dbToken.ts / 1000000)
@@ -94,7 +103,12 @@ async function getAuthToken(forceNew) {
 
   const tokenReq = await fetch(TOKEN_ENDPOINT, {
     method: 'POST',
-    body: new URLSearchParams(body)
+    body: new URLSearchParams(body),
+    headers: {
+      'authorization': itmoAppCreds,
+      'x-app-version': itmoAppVersion,
+      'user-agent': 'Dart/2.15 (dart:io)'
+    }
   });
   const token = await tokenReq.json();
 

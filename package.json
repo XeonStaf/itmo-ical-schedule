@@ -4,7 +4,8 @@
   "description": "Exports your personal schedule to ical format for Google Calendar",
   "main": "src/main.js",
   "scripts": {
-    "initDb": "node src/main.js"
+    "entrypoint": "node src/main.js",
+    "dev": "netlify dev"
   },
   "author": "Maxim Kurbatov",
   "license": "MIT",
@@ -13,9 +14,9 @@
     "date-fns": "^2.23.0",
     "date-fns-tz": "^1.1.6",
     "express": "^4.17.1",
-    "faunadb": "^4.4.1",
+    "faunadb": "^4.5.2",
     "ics": "^2.31.0",
-    "node-fetch": "^3.0.0"
+    "node-fetch": "^2.6.7"
   },
   "devDependencies": {
     "dotenv": "^10.0.0"

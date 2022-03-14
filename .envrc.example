@@ -1,0 +1,6 @@
+export LOGIN=123456
+export PASSWORD=abcdef
+export EMAIL=your@email.com
+#export FAUNA_DB_ENDPOINT=db.us.fauna.com
+export FAUNA_DB_KEY=abcdef
+export ITMO_APP_CREDS="Basic abcdef"

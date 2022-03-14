@@ -31,6 +31,6 @@
 
 [dev]
   framework = "#custom"
-  command = "npm run initDb"
+  command = "npm run entrypoint"
   publish = "public"
   targetPort = 3000
